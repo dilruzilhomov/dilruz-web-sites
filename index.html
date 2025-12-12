@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ILHOMOV DILRUZ — Portfolio / Resume</title>
+  <meta name="description" content="Portfolio / Resume — dark mode, 3D background, hover & tilt effects" />
+  <style>
+    :root{
+      --bg:#06070a;
+      --panel: rgba(255,255,255,0.04);
+      --muted:#9aa4b2;
+      --text:#e8f0fa;
+      --accent1:#7c3aed;
+      --accent2:#06b6d4;
+      --glass: rgba(255,255,255,0.03);
+      --radius:14px;
+      --maxw:1100px;
+      --showcase-img:  c:('showcase.jpg'); /* replace with your image file */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, rgba(2,6,23,1), rgba(7,9,12,1));
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      overflow-x:hidden;
+      padding-top:78px; /* space for navbar */
+    }
+
+    /* Canvas and 3D cubes layer (z-index order: background canvas -> blobs -> cubes -> content) */
+    canvas#particles { position: fixed; inset:0; z-index:0; pointer-events:none; }
+    .blobs { position: fixed; inset:0; z-index:0; pointer-events:none; }
+    .blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;mix-blend-mode:screen}
+    .b1{width:520px;height:520px;background:radial-gradient(circle,#7c3aed 0%,transparent 50%);left:-6%;top:6%}
+    .b2{width:680px;height:680px;background:radial-gradient(circle,#06b6d4 0%,transparent 45%);right:-12%;bottom:-8%}
+    .b3{width:380px;height:380px;background:radial-gradient(circle,#ff5c7c 0%,transparent 45%);left:18%;bottom:6%}
+
+    /* 3D floating cubes container */
+    .cubes { position: fixed; inset:0; z-index:0; pointer-events:none; perspective:1000px; }
+    .cube {
+      position: absolute;
+      width: 120px; height: 120px;
+      transform-style: preserve-3d;
+      opacity: .06;
+      filter: blur(6px);
+      animation: floatCube linear infinite;
+      mix-blend-mode: screen;
+    }
+    .cube::before{
+      content:""; position:absolute; inset:0; background: linear-gradient(135deg, rgba(124,58,237,0.9), rgba(6,182,212,0.7));
+      transform: rotateX(30deg) rotateY(20deg) translateZ(10px);
+      border-radius:12px;
+    }
+    @keyframes floatCube {
+      0%{transform: translate3d(0,0,0) rotateZ(0deg) rotateY(0deg)}
+      50%{transform: translate3d(20px,-30px,40px) rotateZ(45deg) rotateY(60deg)}
+      100%{transform: translate3d(0,0,0) rotateZ(0deg) rotateY(0deg)}
+    }
+
+    /* Container */
+    .container{width:calc(100% - 2rem);max-width:var(--maxw);margin:0 auto;padding:2rem 0;position:relative;z-index:2}
+
+    /* Navbar */
+    header.navbar{
+      position:fixed;top:12px;left:50%;transform:translateX(-50%);
+      width:calc(100% - 2rem);max-width:var(--maxw);
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:12px;
+      backdrop-filter: blur(8px);box-shadow: 0 12px 34px rgba(2,6,23,0.7);z-index:4;
+      border:1px solid rgba(255,255,255,0.03)
+    }
+    .brand{font-weight:800;letter-spacing:0.6px}
+    nav{margin-left:auto;display:flex;gap:12px;align-items:center}
+    nav a{padding:8px 10px;border-radius:10px;font-weight:600;font-size:.95rem;color:var(--muted);transition: all .22s cubic-bezier(.2,.9,.2,1)}
+    nav a:hover{color:#fff;transform:translateY(-3px);text-shadow:0 6px 18px rgba(124,58,237,0.06)}
+    nav a.active{background:linear-gradient(90deg,rgba(255,255,255,0.03),transparent);color:#fff}
+
+    /* Hero */
+    .hero{min-height:74vh;display:grid;align-items:center;grid-template-columns:1fr 420px;gap:2rem;padding:2.5rem 0}
+    .intro .muted{color:var(--muted);margin-bottom:.5rem}
+    .intro h1{font-size:clamp(1.8rem,4.2vw,2.8rem);margin:0}
+    .lead{color:var(--muted);max-width:60ch;margin-top:10px}
+
+    .cta{margin-top:1.2rem;display:flex;gap:12px}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);background:linear-gradient(90deg,#0b1117, rgba(255,255,255,0.02));font-weight:700;color:var(--text);cursor:pointer;transition:transform .18s}
+    .btn.primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));box-shadow:0 10px 30px rgba(124,58,237,0.12)}
+    .btn:hover{transform:translateY(-4px)}
+
+    /* Showcase card with background image */
+    .showcase{
+      background-image: var(--showcase-img);
+      background-size:cover;background-position:center;border-radius:var(--radius);min-height:360px;
+      box-shadow: 0 18px 60px rgba(2,6,23,0.65);display:flex;align-items:flex-end;justify-content:flex-start;padding:18px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.03);
+      transform-style:preserve-3d;
+    }
+    .showcase::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%, rgba(2,6,23,0.7));}
+
+    /* Sections */
+    section{padding:2.25rem 0;border-top:1px dashed rgba(255,255,255,0.02);position:relative;z-index:2}
+    .section-head{display:flex;align-items:center;gap:12px;margin-bottom:1rem}
+    .section-head h2{margin:0;font-size:1.1rem}
+    .muted{color:var(--muted)}
+    .grid{display:grid;gap:var(--gap)}
+    .cards-3{grid-template-columns:repeat(3,1fr)}
+    .cards-2{grid-template-columns:repeat(2,1fr)}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015));
+      border-radius:12px;padding:1.15rem;border:1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 10px 30px rgba(2,6,23,0.6);transition: transform .28s, box-shadow .28s;min-height:120px;overflow:hidden;
+      transform-origin:center center;
+    }
+    .card:hover{transform:translateY(-12px) scale(1.02);box-shadow:0 28px 60px rgba(2,6,23,0.75)}
+
+    /* tilt-card container */
+    .tilt-wrap{perspective:1200px}
+    .tilt-card{transform-style:preserve-3d;transition:transform .15s ease, box-shadow .15s ease}
+
+    /* link underline */
+    .link-underline{position:relative;color:var(--text)}
+    .link-underline::after{content:"";position:absolute;left:0;bottom:-4px;height:2px;width:0;background:linear-gradient(90deg,var(--accent1),var(--accent2));transition:width .28s}
+    .link-underline:hover::after{width:100%}
+
+    /* Contact — background matches site */
+    #contact .contact-card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.03);
+      border-radius:12px;padding:1.25rem;backdrop-filter: blur(6px);
+    }
+    .contact-list{display:flex;flex-direction:column;gap:10px;font-size:1rem}
+    .contact-item{display:flex;gap:12px;align-items:center;color:var(--muted)}
+
+    /* responsive */
+    @media (max-width:980px){
+      .hero{grid-template-columns:1fr;padding:2rem 1rem}
+      nav{display:none}
+      .cards-3{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:600px){
+      .cards-3,.cards-2{grid-template-columns:1fr}
+      .showcase{min-height:260px}
+      .container{padding:0 1rem}
+      header.navbar{padding:8px 12px}
+    }
+
+    /* reduce motion preference */
+    @media (prefers-reduced-motion:reduce){
+      .cube, .blob { animation: none !important; transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Background layers -->
+  <canvas id="particles"></canvas>
+
+  <div class="blobs" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+
+  <div class="cubes" aria-hidden="true">
+    <!-- multiple cube elements with different positions/timings -->
+    <div class="cube" style="left:8%; top:18%; width:140px; height:140px; animation-duration:12s; opacity:.06"></div>
+    <div class="cube" style="left:72%; top:10%; width:120px; height:120px; animation-duration:14s; opacity:.05"></div>
+    <div class="cube" style="left:40%; top:62%; width:220px; height:220px; animation-duration:20s; opacity:.04"></div>
+    <div class="cube" style="left:84%; top:72%; width:160px; height:160px; animation-duration:18s; opacity:.045"></div>
+  </div>
+
+  <!-- NAVBAR -->
+  <header class="navbar" role="banner">
+    <div class="brand">Ilhomov <strong style="opacity:.95">Dilruz</strong></div>
+    <nav aria-label="Main">
+      <a href="#home" class="active">Home</a>
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#projects">Projects</a>
+      <a href="#experience">Experience</a>
+      <a href="#contact">Contact</a>
+    </nav>  
+  </header>
+
+  <main>
+    <section id="home" class="container hero" aria-labelledby="home-heading">
+      <div class="intro">
+        <p class="muted">Salom — Men</p>
+        <h1 id="home-heading">ILHOMOV DILRUZ</h1>
+        <p class="lead">Frontend developer, UI enthusiast. Bu portfolio rezyume uchun umumiy va har kimga mos bo‘ladigan shablon.</p>
+        <div class="cta">
+          <a class="btn primary" href="#projects">Show Projects</a>
+          <a class="btn" href="#contact">Contact Me</a>
+        </div>
+      </div>
+
+      <aside class="showcase" role="img" aria-label="Showcase image">
+        <div style="position:relative;z-index:3;color:#fff">
+
+        </div>
+      </aside>
+    </section>
+
+    <section id="about" class="container" aria-labelledby="about-heading">
+      <div class="section-head"><h2 id="about-heading">About</h2><div class="muted">• Short</div></div>
+      <div class="grid cards-2">
+        <div class="card">
+          <h3>Bio</h3>
+          <p class="muted">Men Ilhomov Dilruz 8 sinf o'quvchisi.HTML va CSS ni yaxshi bilaman </p>
+        </div>
+        <div class="card">
+          <h3>Highlights</h3>
+          <ul class="muted">
+            <li>Semantic HTML & accessible layouts</li>
+            <li>Advanced CSS (animations, 3D transforms)</li>
+            <li>Responsive, mobile-friendly design</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="skills" class="container" aria-labelledby="skills-heading">
+      <div class="section-head"><h2 id="skills-heading">Skills</h2><div class="muted">• Tools</div></div>
+      <div class="grid cards-3">
+        <div class="card tilt-wrap"><div class="tilt-card"><h4>HTML</h4><p class="muted">Semantic structure</p></div></div>
+        <div class="card tilt-wrap"><div class="tilt-card"><h4>CSS</h4><p class="muted">Animations, Grid, Flexbox</p></div></div>
+        <div class="card tilt-wrap"><div class="tilt-card"><h4>JavaScript</h4><p class="muted">Interactive UIs</p></div></div>
+      </div>
+    </section>
+
+    <section id="projects" class="container" aria-labelledby="projects-heading">
+      <div class="section-head"><h2 id="projects-heading">Projects</h2><div class="muted">• Showcase</div></div>
+      <div class="grid cards-3">
+        <div class="tilt-wrap">
+          <article class="card tilt-card" data-tilt>
+            <h3><a class="link-underline" href="./project2.html" target="_blank">Project One</a></h3>
+            <p class="muted">Brief description — purpose and tech used.</p>
+          </article>
+        </div>  
+        <div class="tilt-wrap">
+          <article class="card tilt-card" data-tilt>
+            <h3><a class="link-underline" href="./project1.html"target="_blank">Project Two</a></h3>
+            <p class="muted">Short summary and role.</p>
+          </article>
+        </div>
+        <div class="tilt-wrap">
+          <article class="card tilt-card" data-tilt>
+            <h3><a class="link-underline" href="./project3.html"target="_blank">Project Three</a></h3>
+            <p class="muted">Screenshot or demo link can go here.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="experience" class="container" aria-labelledby="experience-heading">
+      <div class="section-head"><h2 id="experience-heading">Experience</h2><div class="muted">• Work & Education</div></div>
+      <div class="grid cards-2">
+        <div class="card"><h4>Job </h4><p class="muted">New Programer</p></div>
+        <div class="card"><h4>Education</h4><p class="muted">IXLOS School • 8 grade • 14 Year</p></div>
+      </div>
+    </section>
+
+    <section id="contact" class="container" aria-labelledby="contact-heading">
+      <div class="section-head"><h2 id="contact-heading">Contact</h2><div class="muted">• Reach out</div></div>
+
+      <div class="contact-card" style="display:flex;gap:20px;flex-wrap:wrap">
+        <div class="contact-card" style="flex:1;min-width:260px">
+          <div class="contact-list">
+            <div class="contact-item"><strong>Telegram:</strong>&nbsp;<span style="color:var(--text)">@dilruz_01</span></div>
+            <div class="contact-item"><strong>Instagram:</strong>&nbsp;<span style="color:var(--text)">_your_dil</span></div>
+            <div class="contact-item"><strong>Phone:</strong>&nbsp;<span style="color:var(--text)">+998 95 454 77 77</span></div>
+          </div>
+        </div>
+
+        <div style="flex:1;min-width:260px">
+          <form onsubmit="event.preventDefault(); alert('Contact demo — replace with your endpoint');" style="display:flex;flex-direction:column;gap:10px">
+            <input placeholder="Ismingiz" required style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)">
+            <input placeholder="Email" type="email" required style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)">
+            <textarea placeholder="Xabar..." required style="min-height:110px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)"></textarea>
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+              <button class="btn" type="reset">Clear</button>
+              <button class="btn primary" type="submit">Yuborish</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <footer style="padding:2rem 0;text-align:center;color:var(--muted)">
+      © <span id="year"></span> Ilhomov Dilruz — Built with HTML & CSS
+    </footer>
+
+  </main>
+
+<script>
+  // set current year
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Smooth scroll for nav
+  document.querySelectorAll('header.navbar nav a').forEach(a=>{
+    a.addEventListener('click', e=>{
+      e.preventDefault();
+      const tgt = document.querySelector(a.getAttribute('href'));
+      if(tgt) tgt.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+
+  // active nav update
+  const navLinks = document.querySelectorAll('header.navbar nav a');
+  const sections = document.querySelectorAll('main section');
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      const id = entry.target.id;
+      const link = document.querySelector(`header.navbar nav a[href="#${id}"]`);
+      if(entry.isIntersecting){
+        navLinks.forEach(l=>l.classList.remove('active'));
+        if(link) link.classList.add('active');
+      }
+    });
+  },{threshold:0.45});
+  sections.forEach(s=>obs.observe(s));
+
+
+  // 3D tilt for cards
+  document.querySelectorAll('[data-tilt]').forEach(card=>{
+    card.addEventListener('mousemove', (e)=>{
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const cx = rect.width/2, cy = rect.height/2;
+      const dx = (x - cx)/cx, dy = (y - cy)/cy;
+      const max = 10;
+      const rx = (dy * max).toFixed(2);
+      const ry = (-dx * max).toFixed(2);
+      card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) translateZ(0)`;
+    });
+    card.addEventListener('mouseleave', ()=> { card.style.transform = ''; });
+  });
+
+  // PARTICLE CANVAS (stronger, but subtle)
+  (function(){
+    const canvas = document.getElementById('particles');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w = canvas.width = innerWidth;
+    let h = canvas.height = innerHeight;
+    const DPR = Math.max(1, window.devicePixelRatio || 1);
+    canvas.width = w * DPR; canvas.height = h * DPR; canvas.style.width = w + 'px'; canvas.style.height = h + 'px'; ctx.scale(DPR,DPR);
+
+    // particles config (increase counts/size for stronger effect)
+    const COUNT = Math.round((w*h)/28000); // density scale
+    const particles = [];
+    for(let i=0;i<COUNT;i++){
+      particles.push({
+        x: Math.random()*w,
+        y: Math.random()*h, 
+        vx: (Math.random()-0.5)*0.6,
+        vy: (Math.random()-0.5)*0.6,
+        r: Math.random()*2.5+0.6,
+        hue: 180 + Math.random()*180,
+        alpha: 0.12 + Math.random()*0.4
+      });
+    }
+
+    let mouse = {x:w/2, y:h/2};
+    addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+    function step(){
+      ctx.clearRect(0,0,w,h);
+
+      // gentle glow near center for focus
+      const cx = w/2, cy = h/2;
+      const radial = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w,h)*0.7);
+      radial.addColorStop(0,'rgba(255,255,255,0.02)');
+      radial.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle = radial; ctx.fillRect(0,0,w,h);
+
+      for(let p of particles){
+        // subtle attraction to mouse and to center for richer motion
+        const ax = (mouse.x - p.x)*0.00035 + (cx - p.x)*0.00005;
+        const ay = (mouse.y - p.y)*0.00035 + (cy - p.y)*0.00005;
+        p.vx += ax; p.vy += ay;
+
+        p.x += p.vx; p.y += p.vy;
+
+        // wrap edges
+        if(p.x < -10) p.x = w + 10;
+        if(p.x > w + 10) p.x = -10;
+        if(p.y < -10) p.y = h + 10;
+        if(p.y > h + 10) p.y = -10;
+
+        // draw particle
+        ctx.beginPath();
+        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*6);
+        g.addColorStop(0, `hsla(${p.hue}, 90%, 65%, ${p.alpha})`);
+        g.addColorStop(0.2, `hsla(${(p.hue+40)%360}, 80%, 55%, ${p.alpha*0.5})`);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.arc(p.x, p.y, p.r*2.8, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      // connecting lines (subtle)
+      for(let i=0;i<particles.length;i++){
+        for(let j=i+1;j<particles.length;j++){
+          const a = particles[i], b = particles[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const dist = Math.hypot(dx,dy);
+          if(dist < 120){
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            const alpha = 0.02 * (1 - dist/120);
+            ctx.strokeStyle = `rgba(124,58,237,${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+    step();
+
+    addEventListener('resize', ()=>{
+      w = canvas.width = innerWidth; h = canvas.height = innerHeight;
+      canvas.width = w * DPR; canvas.height = h * DPR; canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+      ctx.scale(DPR,DPR);
+      // rebuild particles (optional)
+    });     
+  })();
+
+</script>
+</body>
+</html>
+    
